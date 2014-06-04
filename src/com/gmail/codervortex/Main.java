@@ -39,9 +39,6 @@ public class Main extends JavaPlugin implements Listener
 	public static String link = "";
 
 	
-	// Notes To Self:
-	// 1.) Player Spefic GUI
-	
 	
 	@Override
 	public void onEnable() {

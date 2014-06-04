@@ -1,0 +1,7 @@
+options:
+  auto-update: false
+  auto-update-onlogin-notice: false
+  sound-effects: true
+  soup: true
+  soup-in-kits: true
+  

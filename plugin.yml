@@ -1,0 +1,31 @@
+name: Easy Pvp Kits
+version: 1.1.2
+main: com.gmail.codervortex.Main
+author: Vortex
+dev-url: http://dev.bukkit.org/bukkit-plugins/easy-pvp-kits
+description: A useful and easy to use pvp kit plugin.
+commands:
+  Pvp:
+    description: Gives the user the default pvp kit.
+    usage: /pvp
+  Pyro:
+    description: Gives the user the pyro kit.
+    usage: /pyro
+  Archer:
+    description: Gives the user the archer kit.
+    usage: /archer
+  Heavy:
+    description: Gives the user the heavy kit.
+    usage: /heavy
+  Reset:
+    description: Resets a player's kit.
+    usage: /reset
+  Assassin:
+    description: Gives the user the assassin kit.
+    usage: /assassin
+  Kits:
+    description: Tells the user all their kits.
+    usage: /kits
+  Update:
+    descrpition: Updates the plugin.
+    usage: /update

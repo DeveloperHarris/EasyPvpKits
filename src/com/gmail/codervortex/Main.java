@@ -33,6 +33,10 @@ public class Main extends JavaPlugin implements Listener
 	public static ReleaseType type = null;
 	public static String version = "";
 	public static String link = "";
+<<<<<<< HEAD
+=======
+
+>>>>>>> 400e6c9f5485172639afbd6e6c350f3899b899c9
 	
 	
 	@Override

@@ -38,7 +38,8 @@ public class Pvp implements CommandExecutor
 				player.getInventory().setChestplate(new ItemStack(Material.IRON_CHESTPLATE));
 				player.getInventory().setLeggings(new ItemStack(Material.IRON_LEGGINGS));
 				player.getInventory().setBoots(new ItemStack(Material.IRON_BOOTS));
-				if(plugin.getConfig().getBoolean("options.soup")){
+				if(plugin.getConfig().getBoolean("options.soup-in-kits"))
+				{
 					for (int i = 0; i < 35; i++){
 						player.getInventory().addItem(new ItemStack(Material.MUSHROOM_SOUP));
 					}

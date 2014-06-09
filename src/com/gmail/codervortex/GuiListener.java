@@ -22,9 +22,12 @@ public class GuiListener implements Listener
 	  {
 		 Inventory inv = event.getInventory();
 	      Player p = (Player)event.getWhoClicked();
-		 if ((event.getCurrentItem() != null) && (event.getCurrentItem().getItemMeta() != null)){
-		      if ((inv.getTitle().equals(ChatColor.GOLD + "Kit Selector"))){
-		    	  if (event.getCurrentItem().getItemMeta().getDisplayName().equals(ChatColor.GOLD + "Pvp")){
+		      if ((inv.getTitle().equals(ChatColor.GOLD + "Kit Selector")))
+		      {
+		    	  if ((event.getCurrentItem() != null) && (event.getCurrentItem().getItemMeta() != null))
+		    	  {
+		    	  if (event.getCurrentItem().getItemMeta().getDisplayName().equals(ChatColor.GOLD + "Pvp"))
+		    	  {
 		    		  Bukkit.dispatchCommand(p, "Pvp");
 		    		  if(plugin.getConfig().getBoolean("options.sound-effects"))
 						{
@@ -33,7 +36,8 @@ public class GuiListener implements Listener
 		    		  event.setCancelled(true);
 		    		  p.closeInventory();
 		    	  }
-		    	  if (event.getCurrentItem().getItemMeta().getDisplayName().equals(ChatColor.GOLD + "Archer")){
+		    	  if (event.getCurrentItem().getItemMeta().getDisplayName().equals(ChatColor.GOLD + "Archer"))
+		    	  {
 		    		  Bukkit.dispatchCommand(p, "Archer");
 		    		  if(plugin.getConfig().getBoolean("options.sound-effects"))
 						{
@@ -42,7 +46,8 @@ public class GuiListener implements Listener
 		    		  event.setCancelled(true);
 		    		  p.closeInventory();
 		    	  }
-		    	  if (event.getCurrentItem().getItemMeta().getDisplayName().equals(ChatColor.GOLD + "Heavy")){
+		    	  if (event.getCurrentItem().getItemMeta().getDisplayName().equals(ChatColor.GOLD + "Heavy"))
+		    	  {
 		    		  Bukkit.dispatchCommand(p, "Heavy");
 		    		  if(plugin.getConfig().getBoolean("options.sound-effects"))
 						{
@@ -51,7 +56,8 @@ public class GuiListener implements Listener
 		    		  event.setCancelled(true);
 		    		  p.closeInventory();
 		    	  }
-		    	  if (event.getCurrentItem().getItemMeta().getDisplayName().equals(ChatColor.GOLD + "Assassin")){
+		    	  if (event.getCurrentItem().getItemMeta().getDisplayName().equals(ChatColor.GOLD + "Assassin"))
+		    	  {
 		    		  Bukkit.dispatchCommand(p, "Assassin");
 		    		  if(plugin.getConfig().getBoolean("options.sound-effects"))
 						{
@@ -60,7 +66,8 @@ public class GuiListener implements Listener
 		    		  event.setCancelled(true);
 		    		  p.closeInventory();
 		    	  }
-		    	  if (event.getCurrentItem().getItemMeta().getDisplayName().equals(ChatColor.GOLD + "Pyro")){
+		    	  if (event.getCurrentItem().getItemMeta().getDisplayName().equals(ChatColor.GOLD + "Pyro"))
+		    	  {
 		    		  Bukkit.dispatchCommand(p, "Pyro");
 		    		  if(plugin.getConfig().getBoolean("options.sound-effects"))
 						{
@@ -69,9 +76,14 @@ public class GuiListener implements Listener
 		    		  event.setCancelled(true);
 		    		  p.closeInventory();
 		    	  }
-		    	  if (event.getCurrentItem().getItemMeta().getDisplayName().equals(" ")){
-		    		event.setCancelled(true);
-		    	  }  
+		    	  if ((!event.getCurrentItem().getItemMeta().getDisplayName().equals(ChatColor.GOLD + "Pvp")) || 
+		    	      (!event.getCurrentItem().getItemMeta().getDisplayName().equals(ChatColor.GOLD + "Archer")) || 
+                      (!event.getCurrentItem().getItemMeta().getDisplayName().equals(ChatColor.GOLD + "Heavy")) ||
+		    		  (!event.getCurrentItem().getItemMeta().getDisplayName().equals(ChatColor.GOLD + "Pyro")) ||
+		    		  (!event.getCurrentItem().getItemMeta().getDisplayName().equals(ChatColor.GOLD + "Assassin")))
+		    	      {
+		    		   event.setCancelled(true);
+		    	       }  
 		      }
 		    }			 
 		}

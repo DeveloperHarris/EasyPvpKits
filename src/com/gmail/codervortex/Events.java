@@ -3,12 +3,19 @@ package com.gmail.codervortex;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.minecraft.server.v1_7_R3.EntityPlayer;
+import net.minecraft.server.v1_7_R3.EnumClientCommand;
+import net.minecraft.server.v1_7_R3.PacketPlayInClientCommand;
+
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -20,12 +27,14 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 public class Events implements Listener
 {
@@ -34,9 +43,6 @@ public class Events implements Listener
 	{	
 		plugin = instance;
 	}
-
-
-
 
 	@EventHandler
 	public void potionRemove(PlayerRespawnEvent e)
@@ -53,18 +59,117 @@ public class Events implements Listener
 	  if(player.hasPermission("foo.bar") && Main.update)
 	  {
 		  if(plugin.getConfig().getBoolean("options.auto-update-onlogin-notice")){
-			  
 			  player.sendMessage(ChatColor.GREEN + "An update is available: " + Main.name + ", a " + Main.type + " for " + Main.version + ".");
      		  player.sendMessage(ChatColor.GOLD + "Type /update if you would like to automatically update.");
 			 }
 	  }
 	}
-
+	
+	@EventHandler
+	public void onDeathEvent(PlayerDeathEvent event)
+	{
+		final Player p = event.getEntity();
+		final Player killer = event.getEntity().getKiller();
+		plugin.kits.remove(p.getName());
+		if(plugin.getConfig().getBoolean("options.instant-respawn"))
+		{
+        new BukkitRunnable(){
+        	  @Override
+        	  public void run(){
+        		  PacketPlayInClientCommand in = new PacketPlayInClientCommand(EnumClientCommand.PERFORM_RESPAWN); // Gets the packet class
+        	        EntityPlayer cPlayer = ((CraftPlayer)p).getHandle(); // Gets the EntityPlayer class
+        	        cPlayer.playerConnection.a(in); // Handles the rest of it
+        	  }
+        	}.runTaskLater(plugin, 1L);
+        p.setVelocity(new Vector(0, 0, 0));
+        p.setFireTicks(0);
+		}
+		if(plugin.getConfig().getBoolean("options.no-item-drop-on-death"))
+		{
+			event.getDrops().clear();
+		}
+		if(plugin.getConfig().getBoolean("options.no-death-message"))
+		{
+			event.setDeathMessage("");
+		}
+		//KillStreak Section of onDeath
+		if(plugin.getConfig().getBoolean("options.killstreaks"))
+		{
+		if ((p instanceof Player) && killer instanceof Player)
+		  {
+			 if (!plugin.killstreaks.containsKey(killer.getName()))
+			 {
+				 plugin.killstreaks.put(killer.getName(), 0);
+				 plugin.killstreaks.put(killer.getName(), plugin.killstreaks.get(killer.getName()) + 1);
+			 }
+			 else if (plugin.killstreaks.containsKey(killer.getName()))
+			 {
+				 plugin.killstreaks.put(killer.getName(), plugin.killstreaks.get(killer.getName()) + 1);
+			 }
+			 if (plugin.killstreaks.containsKey(p.getName()))
+			 {
+				 if(plugin.killstreaks.get(p.getName()) >= 5)
+				 {
+					Bukkit.broadcastMessage(ChatColor.GOLD + "" + killer + " has ended " + p + "'s killstreak."); 
+				 }
+				 plugin.killstreaks.remove(p.getName());
+			 }
+			 if (plugin.killstreaks.get(killer.getName()) == 5)
+			 {
+				 Bukkit.broadcastMessage(ChatColor.GOLD + killer.getName() + " has gotten a killstreak of 5.");
+			 }
+			 else if(plugin.killstreaks.get(killer.getName()) == 10)
+			 {
+				 Bukkit.broadcastMessage(ChatColor.GOLD + killer.getName() + " has gotten a killstreak of 10.");
+			 }
+			 else if(plugin.killstreaks.get(killer.getName()) == 25)
+			 {
+				 Bukkit.broadcastMessage(ChatColor.GOLD + killer.getName() + " has gotten a killstreak of 25.");
+			 }
+			 else if(plugin.killstreaks.get(killer.getName()) == 50)
+			 {
+				 Bukkit.broadcastMessage(ChatColor.GOLD + "" + ChatColor.BOLD + killer.getName() + " has gotten a killstreak of 50.");
+			 }
+			 else if(plugin.killstreaks.get(killer.getName()) == 75)
+			 {
+				 Bukkit.broadcastMessage(ChatColor.GOLD + "" + ChatColor.BOLD + killer.getName() + " has gotten a killstreak of 75.");
+			 }
+			 else if(plugin.killstreaks.get(killer.getName()) == 100)
+			 {
+				 Bukkit.broadcastMessage(ChatColor.GOLD + "" + ChatColor.BOLD + killer.getName() + " has gotten a killstreak of 100.");
+			 }
+			 
+        }
+	  }
+	}
+	
+	@EventHandler
+	public void OnPlayerJoin(PlayerJoinEvent e)
+	{
+		if(plugin.getConfig().getBoolean("options.no-login-message"))
+		{
+			e.setJoinMessage("");
+		}
+	}
+	
+	@EventHandler
+	public void OnPlayerLeave(PlayerQuitEvent event)
+	{
+		if(plugin.getConfig().getBoolean("options.no-logoff-message"))
+		{
+			event.setQuitMessage("");
+		}
+		if(plugin.getConfig().getBoolean("options.remove-killstreak-on-logoff"))
+		{
+			Player p = event.getPlayer();
+			plugin.killstreaks.remove(p.getName());
+		}
+	}
 
 	@EventHandler
 	public void OnPlayerSoup(PlayerInteractEvent event){
 		Player player = event.getPlayer();
-		if(plugin.getConfig().getBoolean("options.soup"))
+		if(plugin.getConfig().getBoolean("options.instant-soup"))
 		{
 		if (player.hasPermission("EasyPvpKits.Soup"))
 		 {
@@ -79,18 +184,12 @@ public class Events implements Listener
 				}
 			}
 		 }
-	    }	
+	    }
 	}
-
-
-
-
-
-
 
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onFoodLevelChange(final FoodLevelChangeEvent e){
-		if (e.getEntity().hasPermission("EasyPvpKits.NoHunger")){
+		if ((e.getEntity().hasPermission("EasyPvpKits.NoHunger")) && e instanceof Player){
 			e.setFoodLevel(20);
 			new BukkitRunnable() {
 				public void run() {
@@ -99,10 +198,6 @@ public class Events implements Listener
 			}.runTaskLater(plugin, 1);
 		}
 	}
-
-
-
-
 
 
 	@EventHandler
@@ -148,13 +243,6 @@ public class Events implements Listener
 			}
 		}
 	}
-
-	@EventHandler
-	public void playerDeath(PlayerDeathEvent e) {
-		plugin.kits.remove(e.getEntity().getName());
-	}
-
-
 
 	@SuppressWarnings("deprecation")
 	@EventHandler

@@ -21,11 +21,15 @@ public class Reset implements CommandExecutor
 	if (commandLabel.equalsIgnoreCase("Reset") && sender instanceof Player){
 		if (player.hasPermission("EasyPvpKits.Admin")){
 			if (args.length == 0){
-				player.sendMessage(ChatColor.RED + "Do /reset (Playername) to reset the player's kit.");
+				player.sendMessage(ChatColor.RED + "Do /reset (Playername) to reset a player's kit.");
 			}
 			else if (args.length == 1){
+				@SuppressWarnings("deprecation")
 				Player target = player.getServer().getPlayer(args[0]);
-				if (plugin.kits.contains(target.getName())){
+				if(!(target == null))
+				{
+				if (plugin.kits.contains(target.getName()))
+				{
 					
 					plugin.kits.remove(target.getName());
 					plugin.Assassin.remove(target.getName());
@@ -39,6 +43,8 @@ public class Reset implements CommandExecutor
 					player.sendMessage(ChatColor.GOLD + "The player's kit has been removed!");
 				}
 				else player.sendMessage(ChatColor.RED + "This person has not chosen a kit!");
+				}
+				else player.sendMessage(ChatColor.RED + "This person is not currently on the server.");
 			}
 			else if (args.length >= 1){
 				player.sendMessage(ChatColor.RED + "You have input too many args. Please only do /reset <Playername>.");

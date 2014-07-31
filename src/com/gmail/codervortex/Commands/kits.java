@@ -31,7 +31,9 @@ public class kits implements CommandExecutor
 	      if ((sender instanceof Player))
 	      {
 	       Player player = (Player) sender; 
-	        
+	        if(player.hasPermission("EasyPvpKits.Kits"))
+	        {
+	        	
 	        kits.clear();
 	        
 	        ItemStack pvp = new ItemStack(Material.DIAMOND_SWORD);
@@ -112,6 +114,7 @@ public class kits implements CommandExecutor
 	        player.openInventory(kits);
 	        return true;
 	      }
+	     }
 	    }
 		return false;
 	  }

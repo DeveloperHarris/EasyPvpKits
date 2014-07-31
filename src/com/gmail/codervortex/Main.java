@@ -25,6 +25,7 @@ public class Main extends JavaPlugin implements Listener
 	public ArrayList<String> kits = new ArrayList<String>();
 	public ArrayList<String> AssassinCooldown = new ArrayList<String>();
 	public ArrayList<String> Assassin = new ArrayList<String>();
+	public ArrayList<String> SoupCooldown = new ArrayList<String>();
 	
 	public Map<String, Integer> killstreaks = new HashMap<String, Integer>();
 	
@@ -33,18 +34,13 @@ public class Main extends JavaPlugin implements Listener
 	public static ReleaseType type = null;
 	public static String version = "";
 	public static String link = "";
-<<<<<<< HEAD
-=======
-
->>>>>>> 400e6c9f5485172639afbd6e6c350f3899b899c9
-	
-	
+		
 	@Override
 	public void onEnable()
 	{
 		plugin = this;
 		getServer().getPluginManager().registerEvents(this, this);
-		getLogger().info("Easy Pvp Kits v.1.1.3 is now Enabled.");
+		getLogger().info("Easy Pvp Kits v1.1.4 has been enabled successfully.");
 		getCommands();
 		PluginManager pm = getServer().getPluginManager();
 		pm.registerEvents(events, this);
@@ -99,5 +95,6 @@ public class Main extends JavaPlugin implements Listener
 		getCommand("Pyro").setExecutor(new com.gmail.codervortex.Kits.Pryo(this));
 		getCommand("Pvp").setExecutor(new com.gmail.codervortex.Kits.Pvp(this));
 		getCommand("Update").setExecutor(new com.gmail.codervortex.Commands.update(this));
+		getCommand("Soup").setExecutor(new com.gmail.codervortex.Commands.Soup(this));
 	}
 }

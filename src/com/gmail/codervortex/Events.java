@@ -10,7 +10,6 @@ import net.minecraft.server.v1_7_R3.PacketPlayInClientCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -25,10 +24,12 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.potion.PotionEffect;
@@ -39,6 +40,7 @@ import org.bukkit.util.Vector;
 public class Events implements Listener
 {
 	public Main plugin;
+	public static Inventory soup = Bukkit.createInventory(null, 36, ChatColor.GOLD + "Soup");
 	public Events(Main instance)
 	{	
 		plugin = instance;
@@ -56,13 +58,31 @@ public class Events implements Listener
 	public void onPlayerJoin(PlayerJoinEvent event)
 	{
 	  Player player = event.getPlayer();
-	  if(player.hasPermission("foo.bar") && Main.update)
+	  if(player.hasPermission("EasyPvpKits.Admin") && Main.update)
 	  {
-		  if(plugin.getConfig().getBoolean("options.auto-update-onlogin-notice")){
+		  if(plugin.getConfig().getBoolean("options.auto-update-onlogin-notice"))
+		    {
 			  player.sendMessage(ChatColor.GREEN + "An update is available: " + Main.name + ", a " + Main.type + " for " + Main.version + ".");
      		  player.sendMessage(ChatColor.GOLD + "Type /update if you would like to automatically update.");
 			 }
 	  }
+	}
+	
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onPlayerItemDrop(PlayerDropItemEvent e)
+	{
+		e.setCancelled(false);
+		if(plugin.getConfig().getString("options.no-player-item-drop") != null && plugin.getConfig().getString("options.no-player-item-drop").equalsIgnoreCase("true"))
+		{
+			if(plugin.getConfig().getString("options.bowls-drop-when-no-player-item-drop-is-enabled") != null && plugin.getConfig().getString("options.bowls-drop-when-no-player-item-drop-is-enabled").equalsIgnoreCase("true"))
+			{
+				if(!(e.getItemDrop().getItemStack().getType().equals(Material.BOWL)))
+				{
+						e.setCancelled(true);
+	            }
+			}else
+	        	e.setCancelled(true);
+		}
 	}
 	
 	@EventHandler
@@ -71,11 +91,14 @@ public class Events implements Listener
 		final Player p = event.getEntity();
 		final Player killer = event.getEntity().getKiller();
 		plugin.kits.remove(p.getName());
+		plugin.SoupCooldown.remove(p.getName());
 		if(plugin.getConfig().getBoolean("options.instant-respawn"))
 		{
-        new BukkitRunnable(){
+        new BukkitRunnable()
+        {
         	  @Override
-        	  public void run(){
+        	  public void run()
+        	  {
         		  PacketPlayInClientCommand in = new PacketPlayInClientCommand(EnumClientCommand.PERFORM_RESPAWN); // Gets the packet class
         	        EntityPlayer cPlayer = ((CraftPlayer)p).getHandle(); // Gets the EntityPlayer class
         	        cPlayer.playerConnection.a(in); // Handles the rest of it
@@ -110,7 +133,7 @@ public class Events implements Listener
 			 {
 				 if(plugin.killstreaks.get(p.getName()) >= 5)
 				 {
-					Bukkit.broadcastMessage(ChatColor.GOLD + "" + killer + " has ended " + p + "'s killstreak."); 
+					Bukkit.broadcastMessage(ChatColor.GOLD + "" + killer.getName() + " has ended " + p.getName() + "'s killstreak."); 
 				 }
 				 plugin.killstreaks.remove(p.getName());
 			 }
@@ -137,8 +160,7 @@ public class Events implements Listener
 			 else if(plugin.killstreaks.get(killer.getName()) == 100)
 			 {
 				 Bukkit.broadcastMessage(ChatColor.GOLD + "" + ChatColor.BOLD + killer.getName() + " has gotten a killstreak of 100.");
-			 }
-			 
+			 }		 
         }
 	  }
 	}
@@ -167,7 +189,8 @@ public class Events implements Listener
 	}
 
 	@EventHandler
-	public void OnPlayerSoup(PlayerInteractEvent event){
+	public void OnPlayerSoup(PlayerInteractEvent event)
+	{
 		Player player = event.getPlayer();
 		if(plugin.getConfig().getBoolean("options.instant-soup"))
 		{
@@ -177,7 +200,7 @@ public class Events implements Listener
 			else
 			{
 				int soup = +7;
-				if((event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() ==Action.RIGHT_CLICK_BLOCK) && player.getItemInHand().getType() == Material.MUSHROOM_SOUP)
+				if((event.getAction().equals(Action.RIGHT_CLICK_AIR)  || event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) && player.getItemInHand().getType().equals(Material.MUSHROOM_SOUP))
 				{
 					player.setHealth(player.getHealth() + soup > player.getMaxHealth() ? player.getMaxHealth() : player.getHealth() + soup);
 					event.getPlayer().getItemInHand().setType(Material.BOWL);	            
@@ -188,11 +211,15 @@ public class Events implements Listener
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
-	public void onFoodLevelChange(final FoodLevelChangeEvent e){
-		if ((e.getEntity().hasPermission("EasyPvpKits.NoHunger")) && e instanceof Player){
+	public void onFoodLevelChange(final FoodLevelChangeEvent e)
+	{
+		if ((e.getEntity().hasPermission("EasyPvpKits.NoHunger")) && e instanceof Player)
+		{
 			e.setFoodLevel(20);
-			new BukkitRunnable() {
-				public void run() {
+			new BukkitRunnable() 
+			{
+				public void run() 
+				{
 					e.setCancelled(true);
 				}
 			}.runTaskLater(plugin, 1);
@@ -201,44 +228,60 @@ public class Events implements Listener
 
 
 	@EventHandler
-	public void onSignCreate(SignChangeEvent sign){
+	public void onSignCreate(SignChangeEvent sign)
+	{
 		Player player = sign.getPlayer();
-		if (player.hasPermission("EasyPvpKits.Sign.Create")){
-			if (sign.getLine(0).equalsIgnoreCase("[EPK]")){
-				if (sign.getLine(1).equalsIgnoreCase("Pvp")){
+		if (player.hasPermission("EasyPvpKits.Sign.Create"))
+		{
+			if (sign.getLine(0).equalsIgnoreCase("[EPK]"))
+			{
+				if (sign.getLine(1).equalsIgnoreCase("Pvp"))
+				{
 					sign.setLine(1, ChatColor.DARK_BLUE + "[Pvp]");
 					sign.setLine(0, "");
 					sign.setLine(2, "");
 					sign.setLine(3, "");
 					player.sendMessage(ChatColor.GREEN + "You have created a pvp kit sign successfully.");
 				}
-				if (sign.getLine(1).equalsIgnoreCase("Archer")){
+				if (sign.getLine(1).equalsIgnoreCase("Archer"))
+				{
 					sign.setLine(1, ChatColor.DARK_BLUE + "[Archer]");
 					sign.setLine(0, "");
 					sign.setLine(2, "");
 					sign.setLine(3, "");
 					player.sendMessage(ChatColor.GREEN + "You have created a archer kit sign successfully.");
 				}
-				if (sign.getLine(1).equalsIgnoreCase("Heavy")){
+				if (sign.getLine(1).equalsIgnoreCase("Heavy"))
+				{
 					sign.setLine(1, ChatColor.DARK_BLUE + "[Heavy]");
 					sign.setLine(0, "");
 					sign.setLine(2, "");
 					sign.setLine(3, "");
 					player.sendMessage(ChatColor.GREEN + "You have created a heavy kit sign successfully");
 				}
-				if (sign.getLine(1).equalsIgnoreCase("Assassin")){
+				if (sign.getLine(1).equalsIgnoreCase("Assassin"))
+				{
 					sign.setLine(1, ChatColor.DARK_BLUE + "[Assassin]");
 					sign.setLine(0, "");
 					sign.setLine(2, "");
 					sign.setLine(3, "");
 					player.sendMessage(ChatColor.GREEN + "You have created an assassin kit sign successfully.");					
 				}
-				if (sign.getLine(1).equalsIgnoreCase("Pyro")){
+				if (sign.getLine(1).equalsIgnoreCase("Pyro"))
+				{
 					sign.setLine(1, ChatColor.DARK_BLUE + "[Pyro]");
 					sign.setLine(0, "");
 					sign.setLine(2, "");
 					sign.setLine(3, "");
 					player.sendMessage(ChatColor.GREEN + "You have created an pyro kit sign successfully.");
+				}
+				if(sign.getLine(1).equalsIgnoreCase("Soup"))
+				{
+					sign.setLine(1, ChatColor.DARK_BLUE + "[Soup]");
+					sign.setLine(0, "");
+					sign.setLine(2, "");
+					sign.setLine(3, "");
+					player.sendMessage(ChatColor.GREEN + "You have created a soup sign successfuly.");
 				}
 			}
 		}
@@ -246,15 +289,21 @@ public class Events implements Listener
 
 	@SuppressWarnings("deprecation")
 	@EventHandler
-	public void onSignClick(PlayerInteractEvent event){
+	public void onSignClick(PlayerInteractEvent event)
+	{
 		final Player player = event.getPlayer();
-		if(event.getAction() == Action.RIGHT_CLICK_BLOCK){
+		if(event.getAction() == Action.RIGHT_CLICK_BLOCK)
+		{
 			Block block = event.getClickedBlock();
-			if (block.getType() == Material.SIGN_POST || block.getType() == Material.SIGN || block.getType() == Material.WALL_SIGN){
+			if (block.getType() == Material.SIGN_POST || block.getType() == Material.SIGN || block.getType() == Material.WALL_SIGN)
+			{
 				Sign sign = (Sign) event.getClickedBlock().getState();
-				if (player.hasPermission("EasyPvpKits.Sign.Use")){
-					if (sign.getLine(1).equalsIgnoreCase(ChatColor.DARK_BLUE + "[Pvp]")){
-						if (player.hasPermission("EasyPvpKits.Sign.Kits.Pvp")){
+				if (player.hasPermission("EasyPvpKits.Sign.Use"))
+				{
+					if (sign.getLine(1).equalsIgnoreCase(ChatColor.DARK_BLUE + "[Pvp]"))
+					{
+						if (player.hasPermission("EasyPvpKits.Sign.Kits.Pvp"))
+						{
 							player.getInventory().clear();
 							for (PotionEffect effect : player.getActivePotionEffects())
 								player.removePotionEffect(effect.getType());
@@ -285,12 +334,15 @@ public class Events implements Listener
 
 								 
 						}
-						else{
+						else
+						{
 							player.sendMessage(ChatColor.RED + "You don't have permission to recieve this kit from a sign.");
 						}
 					}
-					if (sign.getLine(1).equalsIgnoreCase(ChatColor.DARK_BLUE + "[Archer]")){
-						if (player.hasPermission("EasyPvpKits.Sign.Kits.Archer")){
+					if (sign.getLine(1).equalsIgnoreCase(ChatColor.DARK_BLUE + "[Archer]"))
+					{
+						if (player.hasPermission("EasyPvpKits.Sign.Kits.Archer"))
+						{
 							player.getInventory().clear();
 							for (PotionEffect effect : player.getActivePotionEffects())
 								player.removePotionEffect(effect.getType());
@@ -324,13 +376,16 @@ public class Events implements Listener
 									player.updateInventory();
 						}
 							
-							else{
+							else
+							{
 								player.sendMessage(ChatColor.RED + "You don't have permission to recieve this kit from a sign.");
 							}
 						}
 					}
-					if (sign.getLine(1).equalsIgnoreCase(ChatColor.DARK_BLUE + "[Heavy]")){
-						if (player.hasPermission("EasyPvpKits.Sign.Kits.Heavy")){
+					if (sign.getLine(1).equalsIgnoreCase(ChatColor.DARK_BLUE + "[Heavy]"))
+					{
+						if (player.hasPermission("EasyPvpKits.Sign.Kits.Heavy"))
+						{
 							player.getInventory().clear();
 							for (PotionEffect effect : player.getActivePotionEffects())
 								player.removePotionEffect(effect.getType());
@@ -363,12 +418,15 @@ public class Events implements Listener
 									player.updateInventory();
 							 
 						}
-						else{
+						else
+						{
 							player.sendMessage(ChatColor.RED + "You don't have permission to recieve this kit from a sign.");
 						}
 					}
-					if (sign.getLine(1).equalsIgnoreCase(ChatColor.DARK_BLUE + "[Assassin]")){
-						if (player.hasPermission("EasyPvpKits.Sign.Kits.Assassin")){
+					if (sign.getLine(1).equalsIgnoreCase(ChatColor.DARK_BLUE + "[Assassin]"))
+					{
+						if (player.hasPermission("EasyPvpKits.Sign.Kits.Assassin"))
+						{
 							player.getInventory().clear();
 							for (PotionEffect effect : player.getActivePotionEffects())
 								player.removePotionEffect(effect.getType());
@@ -430,12 +488,15 @@ public class Events implements Listener
 
 								
 						}
-						else{
+						else
+						{
 							player.sendMessage(ChatColor.RED + "You don't have permission to recieve this kit from a sign.");
 						}
 					}
-					if (sign.getLine(1).equalsIgnoreCase(ChatColor.DARK_BLUE + "[Pyro]")){
-						if (player.hasPermission("EasyPvpKits.Sign.Kits.Pyro")){
+					if (sign.getLine(1).equalsIgnoreCase(ChatColor.DARK_BLUE + "[Pyro]"))
+					{
+						if (player.hasPermission("EasyPvpKits.Sign.Kits.Pyro"))
+						{
 							player.getInventory().clear();
 							for (PotionEffect effect : player.getActivePotionEffects())
 								player.removePotionEffect(effect.getType());
@@ -456,6 +517,8 @@ public class Events implements Listener
 									plugin.kits.add(player.getName());
 
 									player.getInventory().clear();	    
+									
+									player.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, Integer.MAX_VALUE, 1));
 
 									player.getInventory().setHelmet(new ItemStack(Material.CHAINMAIL_HELMET));
 									player.getInventory().setChestplate(new ItemStack(Material.CHAINMAIL_CHESTPLATE));
@@ -472,13 +535,33 @@ public class Events implements Listener
 									player.getInventory().addItem(Arrow);
 									player.updateInventory();
 						}
-						else{
+						else
+						{
 							player.sendMessage(ChatColor.RED + "You don't have permission to recieve this kit from a sign.");
 						}
-					}  
+					}
+					if (sign.getLine(1).equalsIgnoreCase(ChatColor.DARK_BLUE + "[Soup]"))
+					{
+						if (player.hasPermission("EasyPvpKits.Sign.Soup"))
+						{
+							soup.clear();
+							
+							ItemStack soup = new ItemStack(Material.MUSHROOM_SOUP);
+							
+							for (int i = 0; i < 36; i++)
+							{
+								Events.soup.addItem(soup);
+							}
+							
+							player.openInventory(Events.soup);
+						}
+						else
+						{
+							player.sendMessage(ChatColor.RED + "You don't have permission to use soup signs.");
+						}
+					}
 				}
 			}	
-		
 	}
 
 
@@ -512,8 +595,10 @@ public class Events implements Listener
 								player1.sendMessage(ChatColor.GRAY + "You feel your power weaken.");
 							}
 						}.runTaskLater(plugin, 15*20); 
-						new BukkitRunnable() {
-							public void run() {
+						new BukkitRunnable() 
+						{
+							public void run()
+							{
 								plugin.AssassinCooldown.remove(player1.getName());
 							}
 						}.runTaskLater(plugin, 60*20);

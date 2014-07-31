@@ -9,6 +9,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import com.gmail.codervortex.Main;
 
@@ -30,6 +32,8 @@ public class Pryo implements CommandExecutor
 				SSword.addEnchantment(Enchantment.FIRE_ASPECT, 1);
 				ItemStack FBow = new ItemStack(Material.BOW);
 				FBow.addUnsafeEnchantment(Enchantment.ARROW_FIRE, 2);
+				
+				player.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, Integer.MAX_VALUE, 1));
 				
 				if(plugin.getConfig().getBoolean("options.sound-effects"))
 				{

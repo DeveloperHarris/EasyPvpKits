@@ -1,0 +1,16 @@
+options:
+  auto-update: false
+  auto-update-onlogin-notice: false
+  bowls-drop-when-no-player-item-drop-is-enabled: true
+  no-death-message: false
+  instant-soup: true
+  instant-respawn: false
+  killstreaks: false
+  no-item-drop-on-death: false
+  no-player-item-drop: false
+  no-login-message: false
+  no-logoff-message: false
+  remove-killstreak-on-logoff: true
+  sound-effects: true
+  soup-command-cooldown: 60
+  soup-in-kits: true
